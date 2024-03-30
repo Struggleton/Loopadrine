@@ -3,44 +3,27 @@ import glob
 import re
 import os
 import argparse
+import urllib
+import zipfile
 
 # Constants for paths
 PROCESSED_DIR = "./~processed/"
 DOWNLOADS_DIR = "./~downloads/"
 OUTPUT_DIR = "./~output/"
 REDO_DIR = "./~redo/"
+TOOLS_DIR = "./~tools"
+
 
 LOOP_OUTPUT_DIR = os.path.join(DOWNLOADS_DIR, "LooperOutput/")
 
-TOOLS_LOOPINGAUDIO_DIR = "Tools/LoopingAudioConverter/"
-TOOLS_YTDLP = "Tools/yt-dlp/"
+TOOLS_LOOPINGAUDIO_DIR = os.path.join(TOOLS_DIR, "LoopingAudioConverter/")
+TOOLS_YTDLP = os.path.join(TOOLS_DIR, "yt-dlp/")
 
 LOOP_FILENAME = "loop.txt"
+FFMPEG_PATH = os.path.join(TOOLS_DIR, "ffmpeg-release-essentials.zip")
 SONG_LIST = "songs.txt"
-MUSIC_INPUT_EXT = ".wav"
+MUSIC_INPUT_EXT = ".opus"
 MUSIC_OUTPUT_EXT = ".brstm"
-
-def verify_workspace():
-    directories = [PROCESSED_DIR, DOWNLOADS_DIR, OUTPUT_DIR, REDO_DIR]
-    for directory in directories:
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-
-
-def get_sanitized_music_names(music_files):
-    # Create a list of names to return after
-    # removing all non-ascii characters
-    sanitized_music_names = []
-    for music_file in music_files:
-        # Strip the file name using Regex and
-        # the char's hex code
-        sanitized_name = re.sub(r"[^\x00-\x7f]", r"", music_file)
-        sanitized_music_names.append(sanitized_name)
-
-        # Rename files to their sanitized versions
-        os.rename(music_file, sanitized_name)
-    return sanitized_music_names
-
 
 def move_files_to_dir(file_ext, source_dir, dest_dir):
     # Join the extension to the source directory so we can search
@@ -67,6 +50,38 @@ def delete_files_with_extension(directory, extension):
             except OSError as e:
                 print(f"Error deleting {filename}: {e}")
 
+def check_ffmpeg_path():
+    return "ffmpeg" in os.environ["PATH"]
+
+def verify_workspace():
+    if not os.path.exists(TOOLS_DIR):
+        print("The ~tools directory is missing. Please redownload Loopadrine.")
+        raise SystemExit(0)
+
+    directories = [PROCESSED_DIR, DOWNLOADS_DIR, OUTPUT_DIR, REDO_DIR]
+    for directory in directories:
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+    """
+    if not check_ffmpeg_path():
+        download_confirmation = False
+        while True:
+            download_check = input("FFMPEG was not found in the system path." +
+                                   " Would you like to download it? (y/n)" )
+            if download_check == "y":
+                download_confirmation = True
+                break
+            if download_check == "n":
+                break
+
+        if not download_confirmation:
+            print("FFMPEG is required by Loopadrine. Please download FFMPEG.")
+            raise SystemExit(0)
+
+        urllib.request.urlretrieve("https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip", FFMPEG_PATH) 
+        """
+
 
 def clear_workspace(del_process=True, del_download=True, del_loop=True):
     # Clear the files from the processed, downloads and loopOutput folders
@@ -84,13 +99,40 @@ def clear_workspace(del_process=True, del_download=True, del_loop=True):
             os.remove(converter_loop)
 
 
+def get_sanitized_music_names(music_files):
+    # Create a list of names to return after
+    # removing all non-ascii characters
+    sanitized_music_names = []
+    for music_file in music_files:
+        # Strip the file name using Regex and
+        # the char's hex code
+        sanitized_name = re.sub(r"[^\x00-\x7f]", r"", music_file)
+        sanitized_music_names.append(sanitized_name)
+
+        # Rename files to their sanitized versions
+        os.rename(music_file, sanitized_name)
+    return sanitized_music_names
+
+def get_looping_mode():
+    # Get whether or not to use interactive loop searching
+    auto_looping = True
+    while True:
+        auto = input(
+            "Would you like to use interactive loop generation "
+            + "or automatic? (inter/auto) "
+        )
+        if auto == "inter":
+            auto_looping = False
+            break
+        elif auto == "auto":
+            break
+    return auto_looping
+
 def download_playlist():
     # Download music from songs.txt to OPUS files
     # using yt-dlp. Use a custom name format
     # to remove the youtube ID from the filename
-    download_process = subprocess.run(
-        [
-            os.path.join(TOOLS_YTDLP, "yt-dlp"),
+    path = [os.path.join(TOOLS_YTDLP, "yt-dlp"),
             "--extract-audio",
             "--audio-format",
             MUSIC_INPUT_EXT[1:],
@@ -98,10 +140,8 @@ def download_playlist():
             DOWNLOADS_DIR,
             "--batch-file",
             SONG_LIST,
-            "-o %(title)s",
-        ]
-    )
-
+            "-o%(title)s"]
+    download_process = subprocess.run(path)
 
 def generate_loops(files, auto_looping):
     # If auto_looping is enabled, add the interactive command
@@ -110,7 +150,7 @@ def generate_loops(files, auto_looping):
     if not auto_looping:
         export_option.insert(0, "-i")
     # Common part of the command
-    py_looper_command = ["python", "-m", "pymusiclooper"]
+    py_looper_command = ["pymusiclooper"]
 
     # Loop over the file names and use pymusiclooper
     # to generate loops. Create a new window
@@ -134,14 +174,14 @@ def generate_loops(files, auto_looping):
         new_path = os.path.join(PROCESSED_DIR, base_name)
         os.replace(file_name, new_path)
 
-
 def generate_brstms(music_names):
     # Get the path for the looping file that should be generated
-    loop_file_path = os.path.join(LOOP_OUTPUT_DIR, LOOP_FILENAME)
+    loop_file_path = os.path.join(LOOP_OUTPUT_DIR, "loops.txt")
     if os.path.exists(loop_file_path):
         # Get the path for the new location we should move the loop file to
         looping_audio_file_path = os.path.join(TOOLS_LOOPINGAUDIO_DIR, LOOP_FILENAME)
         os.replace(loop_file_path, looping_audio_file_path)
+        
     # For some reason, LoopingAudioConverter
     # doesn't work if the application is not run
     # from the working directory
@@ -163,22 +203,6 @@ def generate_brstms(music_names):
     # up to our ~output directory.
     output_brstm_dir = os.path.join(TOOLS_LOOPINGAUDIO_DIR, "output")
     move_files_to_dir(".brstm", output_brstm_dir, OUTPUT_DIR)
-
-
-def get_looping_mode():
-    # Get whether or not to use interactive loop searching
-    auto_looping = True
-    while True:
-        auto = input(
-            "Would you like to use interactive loop generation "
-            + "or automatic? (inter/auto) "
-        )
-        if auto == "inter":
-            auto_looping = False
-            break
-        elif auto == "auto":
-            break
-    return auto_looping
 
 
 def main():
@@ -250,7 +274,6 @@ def main():
 
     # Create the BRSTMs from the list of opus files
     generate_brstms(new_song_paths)
-
 
 if __name__ == "__main__":
     main()

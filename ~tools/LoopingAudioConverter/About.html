@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+  <body>
+    <h1>Looping Audio Converter 3.1<br>
+    </h1>
+    <p>This application acts as a frontend to other programs and
+      libraries, and allows conversion between a variety of looping
+      audio formats.<br>
+    </p>
+    <p>Supported importers:<br>
+    </p>
+    <table cellspacing="2" cellpadding="2" border="1">
+      <thead> <tr>
+          <th valign="top">Name<br>
+          </th>
+          <th valign="top">Formats<br>
+          </th>
+          <th valign="top">Decoder<br>
+          </th>
+          <th valign="top">Supports Looping Input<br>
+          </th>
+          <th valign="top">Notes<br>
+          </th>
+          <th valign="top">Compressed Audio Object Types</th>
+        </tr>
+      </thead> <tbody>
+        <tr>
+          <td valign="top">WaveImporter<br>
+          </td>
+          <td valign="top">*.wav (signed 16-bit PCM)<br>
+          </td>
+          <td valign="top"><br>
+          </td>
+          <td valign="top">Yes (smpl)<br>
+          </td>
+          <td valign="top"><br>
+          </td>
+          <td valign="top"><br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">MP3Importer<br>
+          </td>
+          <td valign="top">*.mp3<br>
+          </td>
+          <td valign="top"><a href="https://github.com/Nihlus/MP3Sharp">MP3Sharp</a></td>
+          <td valign="top">No<br>
+          </td>
+          <td valign="top"><br>
+          </td>
+          <td valign="top">MP3Audio<br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">VorbisImporter<br>
+          </td>
+          <td valign="top">*.ogg, *.oga<br>
+          </td>
+          <td valign="top"><a moz-do-not-send="true"
+              href="https://www.gyan.dev/ffmpeg/builds/">ffmpeg</a> </td>
+          <td valign="top">Yes (LOOPSTART/LOOPLENGTH)<br>
+          </td>
+          <td valign="top"><br>
+          </td>
+          <td valign="top">VorbisAudio<br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">MSU1Converter<br>
+          </td>
+          <td valign="top">*.pcm<br>
+          </td>
+          <td valign="top"><br>
+          </td>
+          <td valign="top">Yes<br>
+          </td>
+          <td valign="top">Files with a "loop start" of 0 are treated as
+            non-looping<br>
+          </td>
+          <td valign="top"><br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">MSFImporter<br>
+          </td>
+          <td valign="top">*.msf<br>
+          </td>
+          <td valign="top"><br>
+          </td>
+          <td valign="top"><br>
+          </td>
+          <td valign="top">Supports 16-bit PCM (big or little endian),
+            or MP3<br>
+          </td>
+          <td valign="top">MP3Audio (if MP3) </td>
+        </tr>
+        <tr>
+          <td valign="top">VGMStreamImporter<br>
+          </td>
+          <td valign="top">*<br>
+          </td>
+          <td valign="top"><a
+              href="https://gitlab.kode54.net/kode54/vgmstream">vgmstream</a><br>
+            (test.exe)<br>
+          </td>
+          <td valign="top">Yes (via vgmstream)<br>
+          </td>
+          <td valign="top">Only attempted if test.exe is present<br>
+          </td>
+          <td valign="top">VGAudio<br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">VGAudioImporter<br>
+          </td>
+          <td valign="top">*.adx, *.brstm, *.bcstm, *.bcstp, *.bcwav,
+            *.cwav, *.bfstm, *.bfstp, *.bfwav, *.brwav, *.rwav, *.dsp,
+            *.mdsp, *.idsp, *.genh, *.hca, *.hps<br>
+          </td>
+          <td valign="top"><a
+              href="https://github.com/Thealexbarney/VGAudio">VGAudio</a>
+          </td>
+          <td valign="top">Yes<br>
+          </td>
+          <td valign="top"><br>
+          </td>
+          <td valign="top"><br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">BrawlLibImporter<br>
+          </td>
+          <td valign="top">*<br>
+          </td>
+          <td valign="top"><a moz-do-not-send="true"
+              href="https://github.com/soopercool101/BrawlCrate">BrawlCrate</a>
+            (BrawlLib.dll)<br>
+          </td>
+          <td valign="top">Yes<br>
+          </td>
+          <td valign="top"><br>
+          </td>
+          <td valign="top">RSTMNode (sometimes) </td>
+        </tr>
+        <tr>
+          <td valign="top">VGMImporter<br>
+          </td>
+          <td valign="top">*.vgm, *.vgz<br>
+          </td>
+          <td valign="top"><a moz-do-not-send="true"
+              href="https://vgmrips.net/forum/viewtopic.php?t=112">VGMPlay<br>
+            </a></td>
+          <td valign="top">Yes (from file header)<br>
+          </td>
+          <td valign="top">Will use ffmpeg to render if VGMPlay path is
+            not present in .config file (ffmpeg sometimes contains a
+            more limited version of the VGM library)<br>
+          </td>
+          <td valign="top"><br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">FFmpegEngine<br>
+          </td>
+          <td valign="top">*<br>
+          </td>
+          <td valign="top"><a moz-do-not-send="true"
+              href="https://www.gyan.dev/ffmpeg/builds/">ffmpeg</a> </td>
+          <td valign="top">No<br>
+          </td>
+          <td valign="top"><br>
+          </td>
+          <td valign="top"><br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p>Supported exporters:<br>
+    </p>
+    <table cellspacing="2" cellpadding="2" border="1">
+      <thead> <tr>
+          <th valign="top">Name<br>
+          </th>
+          <th valign="top">Formats<br>
+          </th>
+          <th valign="top">Encoder<br>
+          </th>
+          <th valign="top">Supports Looping Output<br>
+          </th>
+          <th valign="top">Additional Options Available<br>
+          </th>
+          <th valign="top">Compressed Audio Object Types<br>
+          </th>
+        </tr>
+      </thead> <tbody>
+        <tr>
+          <td valign="top">[VGAudio] BRSTM<br>
+          </td>
+          <td valign="top">*.brstm<br>
+          </td>
+          <td valign="top">VGAudio<br>
+          </td>
+          <td valign="top">Yes<br>
+          </td>
+          <td valign="top">Yes (including codec: ADPCM, PCM16, etc.)<br>
+          </td>
+          <td valign="top">AudioData<br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">[VGAudio] BCSTM<br>
+          </td>
+          <td valign="top">*.bcstm<br>
+          </td>
+          <td valign="top">VGAudio</td>
+          <td valign="top">Yes</td>
+          <td valign="top">Yes (including codec: ADPCM, PCM16, etc.)</td>
+          <td valign="top">AudioData</td>
+        </tr>
+        <tr>
+          <td valign="top">[VGAudio] BFSTM<br>
+          </td>
+          <td valign="top">*.bfstm<br>
+          </td>
+          <td valign="top">VGAudio</td>
+          <td valign="top">Yes</td>
+          <td valign="top">Yes (including codec: ADPCM, PCM16, etc.)</td>
+          <td valign="top">AudioData</td>
+        </tr>
+        <tr>
+          <td valign="top">[VGAudio] DSP </td>
+          <td valign="top">*.dsp<br>
+          </td>
+          <td valign="top">VGAudio</td>
+          <td valign="top">Yes</td>
+          <td valign="top"><br>
+          </td>
+          <td valign="top">AudioData</td>
+        </tr>
+        <tr>
+          <td valign="top">[VGAudio] IDSP </td>
+          <td valign="top">*.idsp<br>
+          </td>
+          <td valign="top">VGAudio</td>
+          <td valign="top">Yes</td>
+          <td valign="top"><br>
+          </td>
+          <td valign="top">AudioData</td>
+        </tr>
+        <tr>
+          <td valign="top">[VGAudio] HPS </td>
+          <td valign="top">*.hps<br>
+          </td>
+          <td valign="top">VGAudio</td>
+          <td valign="top">Yes</td>
+          <td valign="top"><br>
+          </td>
+          <td valign="top">AudioData</td>
+        </tr>
+        <tr>
+          <td valign="top">[VGAudio] HCA </td>
+          <td valign="top">*.hca<br>
+          </td>
+          <td valign="top">VGAudio</td>
+          <td valign="top">Yes</td>
+          <td valign="top">Yes</td>
+          <td valign="top">AudioData</td>
+        </tr>
+        <tr>
+          <td valign="top">[VGAudio] ADX </td>
+          <td valign="top">*.adx<br>
+          </td>
+          <td valign="top">VGAudio</td>
+          <td valign="top">Yes</td>
+          <td valign="top">Yes</td>
+          <td valign="top">AudioData</td>
+        </tr>
+        <tr>
+          <td valign="top">[BrawlLib] BRSTM (ADPCM)<br>
+          </td>
+          <td valign="top">*.brstm<br>
+          </td>
+          <td valign="top">BrawlCrate<br>
+          </td>
+          <td valign="top">Yes</td>
+          <td valign="top"><br>
+          </td>
+          <td valign="top">RSTMNode</td>
+        </tr>
+        <tr>
+          <td valign="top">[BrawlLib] BRSTM (PCM16) </td>
+          <td valign="top">*.brstm<br>
+          </td>
+          <td valign="top">BrawlCrate</td>
+          <td valign="top">Yes</td>
+          <td valign="top"><br>
+          </td>
+          <td valign="top">RSTMNode</td>
+        </tr>
+        <tr>
+          <td valign="top">[BrawlLib] BCSTM (ADPCM) </td>
+          <td valign="top">*.bcstm<br>
+          </td>
+          <td valign="top">BrawlCrate</td>
+          <td valign="top">Yes</td>
+          <td valign="top"><br>
+          </td>
+          <td valign="top">RSTMNode</td>
+        </tr>
+        <tr>
+          <td valign="top">[BrawlLib] BFSTM (ADPCM) </td>
+          <td valign="top">*.bfstm<br>
+          </td>
+          <td valign="top">BrawlCrate</td>
+          <td valign="top">Yes</td>
+          <td valign="top"><br>
+          </td>
+          <td valign="top">RSTMNode</td>
+        </tr>
+        <tr>
+          <td valign="top">[BrawlLib] BRWAV (ADPCM) </td>
+          <td valign="top">*.brwav<br>
+          </td>
+          <td valign="top">BrawlCrate</td>
+          <td valign="top">Yes</td>
+          <td valign="top"><br>
+          </td>
+          <td valign="top"><br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">MSF (PCM16, big-endian)<br>
+          </td>
+          <td valign="top">*.msf<br>
+          </td>
+          <td valign="top"><br>
+          </td>
+          <td valign="top">Yes<br>
+          </td>
+          <td valign="top"><br>
+          </td>
+          <td valign="top"><br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">MSF (PCM16, little-endian)<br>
+          </td>
+          <td valign="top">*.msf<br>
+          </td>
+          <td valign="top"><br>
+          </td>
+          <td valign="top">Yes<br>
+          </td>
+          <td valign="top"><br>
+          </td>
+          <td valign="top"><br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">MSU-1<br>
+          </td>
+          <td valign="top">*.pcm<br>
+          </td>
+          <td valign="top"><br>
+          </td>
+          <td valign="top">Yes<br>
+          </td>
+          <td valign="top"><br>
+          </td>
+          <td valign="top"><br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">WAV<br>
+          </td>
+          <td valign="top">*.wav<br>
+          </td>
+          <td valign="top">ffmpeg<br>
+          </td>
+          <td valign="top">Yes (smpl)<br>
+          </td>
+          <td valign="top"><br>
+          </td>
+          <td valign="top"><br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">[FFmpeg] FLAC<br>
+          </td>
+          <td valign="top">*.flac<br>
+          </td>
+          <td valign="top">ffmpeg<br>
+          </td>
+          <td valign="top">Yes (LOOPSTART/LOOPLENGTH)<br>
+          </td>
+          <td valign="top">Yes<br>
+          </td>
+          <td valign="top"><br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">[FFmpeg] MP3<br>
+          </td>
+          <td valign="top">*.mp3<br>
+          </td>
+          <td valign="top">ffmpeg<br>
+          </td>
+          <td valign="top">No<br>
+          </td>
+          <td valign="top">Yes<br>
+          </td>
+          <td valign="top">MP3Audio<br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">[FFmpeg] AAC (.m4a)<br>
+          </td>
+          <td valign="top">*.m4a<br>
+          </td>
+          <td valign="top">ffmpeg<br>
+          </td>
+          <td valign="top">No<br>
+          </td>
+          <td valign="top">Yes<br>
+          </td>
+          <td valign="top"><br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">[FFmpeg] AAC (ADTS .aac)<br>
+          </td>
+          <td valign="top">*.aac<br>
+          </td>
+          <td valign="top">ffmpeg<br>
+          </td>
+          <td valign="top">No<br>
+          </td>
+          <td valign="top">Yes<br>
+          </td>
+          <td valign="top"><br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">[FFmpeg] Vorbis (.ogg)<br>
+          </td>
+          <td valign="top">*.ogg<br>
+          </td>
+          <td valign="top">ffmpeg<br>
+          </td>
+          <td valign="top">Yes (LOOPSTART/LOOPLENGTH)<br>
+          </td>
+          <td valign="top">Yes<br>
+          </td>
+          <td valign="top">VorbisAudio</td>
+        </tr>
+        <tr>
+          <td valign="top">[qaac] AAC (.m4a)<br>
+          </td>
+          <td valign="top">*.m4a<br>
+          </td>
+          <td valign="top">qaac (requires QuickTime)<br>
+          </td>
+          <td valign="top"><br>
+          </td>
+          <td valign="top">Yes<br>
+          </td>
+          <td valign="top"><br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">[qaac] AAC (ADTS .aac)<br>
+          </td>
+          <td valign="top">*.aac<br>
+          </td>
+          <td valign="top">qaac (requires QuickTime)<br>
+          </td>
+          <td valign="top"><br>
+          </td>
+          <td valign="top">Yes<br>
+          </td>
+          <td valign="top"><br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <hr width="100%" size="2">
+    <p>The source code to Looping Audio Converter is released under the
+      GNU LGPL, version 3 or later.<br>
+    </p>
+    <p>Looping Audio Converter does not do any encoding or decoding
+      itself of any format besides WAV. Other formats are handled by
+      other applications or other .NET libraries, which do the bulk of
+      the work.<br>
+    </p>
+    <p>You will need write access to the folder that the application is
+      running in for it to store temporary WAV files.</p>
+    <hr width="100%" size="2">
+    <p><img
+src="data:image/png;base64,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"
+        alt=""> </p>
+    <p>Options available on the startup screen:<br>
+    </p>
+    <ul>
+      <li><b>Only files ending with: </b> This option will remove any
+        file not ending with the given extension from the list when you
+        click Filter. Useful after you use the "add folder" button to
+        add all files in a folder, recursively.</li>
+      <li><b>Input directory:</b> Used in conjunction with the "Add
+        Folder" workflow; allows Looping Audio Converter to more
+        accurately mirror the structure of subdirectories under the
+        original input directory.<br>
+      </li>
+      <li><b>Output directory</b></li>
+      <ul>
+        <li>To keep part of the original path, use one or more asterisks
+          in the output path.<br>
+          For example, an input file of "C:\Music\The Golden
+          Bubbles\Seventy-Two\10 Mpls.m4a" and an output path of
+          "./output/*/*" will result in the file "./output/The Golden
+          Bubbles/Seventy-Two/10 Mpls.brstm". Since there are two
+          asterisks in this example, the last two directory names of the
+          original file's path are used.<br>
+        </li>
+      </ul>
+      <li>Audio effects<br>
+      </li>
+      <ul>
+        <li><b>Convert to mono: </b>combines all audio channels into
+          one to save space</li>
+        <li><b>New sample rate (Hz): </b>a sample rate to downsample to
+          (unless the input file is at that rate or lower, in which case
+          it will not be changed); this also saves space but comes with
+          a noticeable reduction in audio quality</li>
+        <li><b>Amplify (dB or amplitude ratio): </b>changes the volume
+          of the audio. In dB, negative values reduce the volume. For
+          amplitude ratio, use 2 to double the volume or 0.5 to cut it
+          in half.</li>
+        <li><b>Adjust pitch (semitones):</b> adjusts the pitch up or
+          down without affecting the tempo. Twelve semitones = one
+          octave.</li>
+        <li><b>Adjust tempo:</b> makes the audio faster or slower
+          without affecting the pitch. (Lowering the tempo may also
+          result in a lower sample rate.)<br>
+        </li>
+      </ul>
+      <li>Loop options<br>
+      </li>
+      <ul>
+        <li><b>Keep as is</b>: Loop points will be kept in input files
+          that have them, and will not be added to files that do not.</li>
+        <li><b>Remove loop information if present</b>: All input files
+          will be treated as non-looping.</li>
+        <li><b>Add loop information if missing (start-to-end loop)</b>:
+          Any input files that are non-looping or lack loop information
+          will be looped start to end in the output.</li>
+        <li><b>Ask for non-looping files</b>: The audio import dialog
+          from BrawlCrate will be shown for each input file without loop
+          information after decoding so you can specify your own loop
+          point.<br>
+        </li>
+        <li><b>Ask for all files</b>: The audio import dialog from
+          BrawlCrate will be shown for all input files. For looping
+          files, the loop point will be pre-populated.<br>
+        </li>
+      </ul>
+      <li>Channel export options</li>
+      <ul>
+        <li><b>Put all channels in one file</b>: keeps the channel count
+          as-is, even if there are more than two channels (left and
+          right).<br>
+        </li>
+        <li><b>Put each pair of channels in its own file</b>: In video
+          game music files, multiple channels sometimes correspond to
+          different parts of a level (e.g. Klonoa) - use this option to
+          export those parts separately. If the number of channels is
+          odd, the last channel will be exported on its own.</li>
+        <li><b>Put each channel in its own file</b>: With this option,
+          even stereo files will be split up.</li>
+      </ul>
+      <li><b>Output format</b>: see above.</li>
+      <ul>
+        <li><b>Options</b>: Audio quality options for encoding.</li>
+      </ul>
+      <li><b>Export all through loop end</b>: exports from the beginning
+        of the track through at least one loop and with an optional
+        amount of fade-out time at the end. The text in "suffix" will be
+        appended to the filename.</li>
+      <li><b>Export segment before loop</b>: exports the section from
+        the beginning of the track until the loop start point. The text
+        in "suffix" will be appended to the filename.</li>
+      <li><b>Export loop segment</b>: exports the section from the loop
+        start until the loop end. The text in "suffix" will be appended
+        to the filename.</li>
+      <li><b>Export segment after loop</b>: exports the section after
+        the loop end, if any. The text in "suffix" will be appended to
+        the filename.</li>
+      <li><b>All (+1 semitone, 1.1x tempo)</b>: Useful for "final lap"
+        music in Mario Kart.<br>
+      </li>
+      <li><b>Copy audio data only (skip if re-encode is required)</b>:
+        In version 3.1+, you can use the "copy audio data only" option
+        to match importers and exporters that share a "Compressed Audio
+        Object Type", to avoid decoding and then re-encoding audio to
+        the same codec (for example, converting BRSTM to BCSTM or
+        extracting the MP3 data from an MSF file).</li>
+      <li><b>Load Options</b> and <b>Save Options</b>: These buttons
+        allow you to load and save the options listed above to an .xml
+        file. If there is a file in the current directory named
+        LoopingAudioConverter.xml when the program starts, it will try
+        to load options from this file automatically.</li>
+    </ul>
+    <hr width="100%" size="2">
+    <p>Command line arguments:<br>
+    </p>
+    <ul>
+      <li>Specify --auto to start the conversion automatically and close
+        the program when it is complete.</li>
+      <li>Specify an .xml file to set the conversion settings. You can
+        export an .xml file from Looping Audio Converter with "Save
+        Options".</li>
+      <li>All other command line arguments will be treated as input
+        files.</li>
+    </ul>
+    <p>These command line arguments might be removed or modified in
+      future versions.<br>
+    </p>
+    <p>If you just want to convert between WAV and VGAudio-supported
+      formats like BRSTM, try <a
+        href="https://github.com/Thealexbarney/VGAudio">VGAudioCli</a>.<br>
+    </p>
+    <hr width="100%" size="2">If your input files don't have loop
+    points, but they should, you can specify them in a file called <tt>loop.txt</tt>
+    in the folder you run the program from.<br>
+    <p> Each line should have the format:<br>
+    </p>
+    <pre>{loop-start} {loop-end} {filename}<br></pre>
+    <p>For example:<br>
+    </p>
+    <pre>853168 5087322 41 Carefree Action.wav<br></pre>
+    <p>Looping Audio Converter will pick up on this file if it exists.
+      To prevent a song from looping, use a negative number as the loop
+      start value.</p>
+  </body>
+</html>
